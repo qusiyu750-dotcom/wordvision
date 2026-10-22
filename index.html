@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="description" content="基于图片联想的个人英语单词学习工具">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <title>WordVision 图片背词</title>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark">W</div>
+    <div class="brand-text"><h1>WordVision</h1><p>看见画面，记住单词</p></div>
+    <button id="installBtn" class="btn btn-light hidden" type="button">安装应用</button>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">YOUR PERSONAL VOCABULARY SPACE</span>
+        <h2>用图片建立<br><span>单词与意义的连接</span></h2>
+        <p>导入自己的词表，上传对应图片，按自己的节奏学习。</p>
+      </div>
+      <div class="hero-art" aria-hidden="true"><span>🌉</span><span>🌱</span><span>🌾</span></div>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat-card"><span>词库单词</span><strong id="wordCount">0</strong></div>
+      <div class="stat-card"><span>已学单词</span><strong id="learnedCount">0</strong></div>
+      <div class="stat-card"><span>今日练习</span><strong id="todayCount">0</strong></div>
+    </section>
+
+    <nav class="tabs" aria-label="功能导航">
+      <button class="tab active" data-view="learn">📖 图片学习</button>
+      <button class="tab" data-view="quiz">🧠 看图猜词</button>
+      <button class="tab" data-view="associate">💡 联想练习</button>
+      <button class="tab" data-view="manage">🗂️ 我的词库</button>
+    </nav>
+
+    <section id="learnView" class="view">
+      <div class="section-heading"><div><h3>图片学习</h3><p>先观察图片，再建立词形、词义和画面的联系。</p></div><span id="learnPosition" class="pill">0 / 0</span></div>
+      <div id="learnCard" class="study-card empty-state">
+        <div class="empty-icon">🖼️</div><h3>你的词库还没有单词</h3><p>你可以先添加单词，或导入自己的 CSV / TXT 词表。</p><button class="btn btn-primary" data-goto="manage">去添加单词</button>
+      </div>
+      <div id="learnControls" class="controls hidden">
+        <button id="prevWord" class="btn btn-secondary">← 上一个</button>
+        <button id="revealMeaning" class="btn btn-primary">显示中文释义</button>
+        <button id="nextWord" class="btn btn-secondary">下一个 →</button>
+      </div>
+      <div id="meaningPanel" class="meaning-panel hidden"></div>
+    </section>
+
+    <section id="quizView" class="view hidden">
+      <div class="section-heading"><div><h3>看图猜词</h3><p>看图选择最符合画面意思的英文单词。</p></div><span id="quizScore" class="pill">答对 0 题</span></div>
+      <div id="quizCard" class="study-card empty-state"><div class="empty-icon">🎯</div><h3>准备好开始了吗？</h3><p>词库至少有 2 个单词即可开始练习。</p><button id="startQuiz" class="btn btn-primary">开始练习</button></div>
+      <div id="quizFeedback" class="feedback hidden" aria-live="polite"></div>
+      <div class="controls"><button id="nextQuiz" class="btn btn-primary hidden">下一题 →</button></div>
+    </section>
+
+    <section id="associateView" class="view hidden">
+      <div class="section-heading"><div><h3>图片 + 语义联想</h3><p>观察图片，尝试回忆英文词，并说出或写下它的意思。</p></div><span id="associatePosition" class="pill">0 / 0</span></div>
+      <div id="associateCard" class="study-card empty-state"><div class="empty-icon">💭</div><h3>等待你的词库</h3><p>添加单词和图片后，就可以开始联想练习。</p><button class="btn btn-primary" data-goto="manage">去添加单词</button></div>
+      <div id="associateControls" class="controls hidden"><button id="showAssociation" class="btn btn-primary">查看答案</button><button id="nextAssociation" class="btn btn-secondary">下一个 →</button></div>
+      <div id="associationAnswer" class="meaning-panel hidden"></div>
+    </section>
+
+    <section id="manageView" class="view hidden">
+      <div class="section-heading"><div><h3>我的词库</h3><p>单词和图片保存在当前设备的浏览器中。</p></div></div>
+      <div class="manage-grid">
+        <form id="wordForm" class="panel">
+          <h4 id="formTitle">添加一个单词</h4>
+          <input type="hidden" id="wordId">
+          <label>英文单词 <input id="wordInput" required maxlength="100" placeholder="例如 bridge"></label>
+          <label>中文释义 <input id="meaningInput" required maxlength="300" placeholder="例如 桥；桥梁"></label>
+          <label>词性（选填） <input id="posInput" maxlength="80" placeholder="例如 noun / verb"></label>
+          <label>例句或联想提示（选填） <textarea id="exampleInput" rows="3" maxlength="800" placeholder="例如 A bridge connects the two sides of a river."></textarea></label>
+          <label>上传图片（选填） <input id="imageInput" type="file" accept="image/*"></label>
+          <div id="imagePreview" class="image-preview hidden"></div>
+          <div class="form-actions"><button type="submit" class="btn btn-primary">保存单词</button><button id="cancelEdit" type="button" class="btn btn-secondary hidden">取消编辑</button></div>
+          <p class="hint">建议上传能突出单词核心含义的图片，而不只是漂亮的风景图。</p>
+        </form>
+        <div class="panel">
+          <h4>导入 / 导出</h4>
+          <p class="muted">支持 CSV 或 TXT。CSV 第一行可使用：word,meaning,pos,example,image（图片需要在应用中单独上传）。</p>
+          <label class="file-drop">选择词表文件<input id="importFile" type="file" accept=".csv,.txt,text/csv,text/plain"></label>
+          <div class="button-stack"><button id="downloadTemplate" class="btn btn-secondary">下载 CSV 模板</button><button id="exportWords" class="btn btn-secondary">导出词表 CSV</button><button id="exportBackup" class="btn btn-secondary">导出完整备份（含图片）</button><label class="file-drop">恢复完整备份<input id="restoreBackup" type="file" accept=".json,application/json"></label></div>
+          <p class="hint">完整备份会包含图片和学习记录。请妥善保存导出的 JSON 文件。</p>
+        </div>
+      </div>
+      <div class="word-list-header"><h4>单词列表 <span id="listCount" class="muted"></span></h4><input id="searchWords" class="search-input" placeholder="搜索单词或释义"></div>
+      <div id="wordList" class="word-list"><p class="muted">还没有添加单词。</p></div>
+      <div class="danger-zone"><div><strong>清空本地词库</strong><p>删除当前浏览器中保存的所有单词、图片和学习记录。建议先导出备份。</p></div><button id="clearAll" class="btn btn-danger">清空数据</button></div>
+    </section>
+
+    <footer><p>WordVision 个人版 · 数据默认保存在本设备，不会自动上传到云端。</p><p id="storageNotice" class="small-muted">首次使用建议先添加几个单词并导出备份。</p></footer>
+  </main>
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

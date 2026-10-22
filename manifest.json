@@ -1,0 +1,17 @@
+{
+  "name": "WordVision 图片背词",
+  "short_name": "WordVision",
+  "description": "基于图片联想的个人英语单词学习工具",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fafaff",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
