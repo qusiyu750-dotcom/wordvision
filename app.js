@@ -120,6 +120,8 @@ async function answerQuiz(button) {
   $("quizFeedback").className=`feedback ${correct?"good":"bad"}`;
   $("quizFeedback").textContent=correct?`回答正确！${quizTarget.word}：${quizTarget.meaning}`:`正确答案是 ${quizTarget.word}：${quizTarget.meaning}`;
   $("quizFeedback").classList.remove("hidden");$("nextQuiz").classList.remove("hidden");
+  // 看图猜词：答完后朗读正确单词（只想答对才读，可改成 if(correct && window.speakWord) ...）
+  if(window.speakWord) window.speakWord(quizTarget.word);
   await markLearned(quizTarget);
 }
 function renderWordList(filter="") {
@@ -236,6 +238,7 @@ async function init() {
   $("installBtn").addEventListener("click",async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").classList.add("hidden");}else{showToast("iPhone 请在 Safari 中点分享按钮，再选择“添加到主屏幕”。");}});
 }
 init();
+
 // ===== 单词发音功能 =====
 (function () {
   const synth = window.speechSynthesis;
@@ -262,24 +265,34 @@ init();
     synth.speak(u);
   };
 
-  // 在"图片学习"和"联想练习"的卡片里，单词出现时自动朗读
-  const watch = (id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
+  // 图片学习页：切换单词时自动朗读
+  const lc = document.getElementById("learnCard");
+  if (lc) {
     new MutationObserver(() => {
-      const w = el.querySelector(".study-word");
+      const w = lc.querySelector(".study-word");
       if (!w) return;
       const word = w.textContent.trim();
-      if (el.dataset.spoken === word) return;
-      el.dataset.spoken = word;
+      if (lc.dataset.spoken === word) return;
+      lc.dataset.spoken = word;
       window.speakWord(word);
-    }).observe(el, { childList: true, subtree: true });
-  };
-  watch("learnCard");
+    }).observe(lc, { childList: true, subtree: true });
+  }
 
-  // 点击单词可再次播放
+  // 联想练习：点"查看答案"后朗读
+  const aa = document.getElementById("associationAnswer");
+  if (aa) {
+    new MutationObserver(() => {
+      if (aa.classList.contains("hidden")) return;
+      const w = aa.querySelector(".study-word");
+      if (w) window.speakWord(w.textContent.trim());
+    }).observe(aa, { childList: true, attributes: true, attributeFilter: ["class"] });
+  }
+
+  // 点击任何单词可重播（排除联想练习卡片里的"？"）
   document.addEventListener("click", e => {
     const w = e.target.closest(".study-word");
-    if (w) window.speakWord(w.textContent.trim());
+    if (!w) return;
+    const t = w.textContent.trim();
+    if (t && t !== "？") window.speakWord(t);
   });
 })();
