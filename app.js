@@ -236,3 +236,50 @@ async function init() {
   $("installBtn").addEventListener("click",async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("installBtn").classList.add("hidden");}else{showToast("iPhone 请在 Safari 中点分享按钮，再选择“添加到主屏幕”。");}});
 }
 init();
+// ===== 单词发音功能 =====
+(function () {
+  const synth = window.speechSynthesis;
+  if (!synth) return; // 浏览器不支持就跳过
+
+  let voice = null;
+  function pickVoice() {
+    const voices = synth.getVoices();
+    voice =
+      voices.find(v => v.lang === "en-US" && /Google|Samantha|Microsoft/i.test(v.name)) ||
+      voices.find(v => v.lang.startsWith("en")) ||
+      null;
+  }
+  pickVoice();
+  synth.onvoiceschanged = pickVoice;
+
+  window.speakWord = function (text) {
+    if (!text) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.85;
+    if (voice) u.voice = voice;
+    synth.speak(u);
+  };
+
+  // 在"图片学习"和"联想练习"的卡片里，单词出现时自动朗读
+  const watch = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    new MutationObserver(() => {
+      const w = el.querySelector(".study-word");
+      if (!w) return;
+      const word = w.textContent.trim();
+      if (el.dataset.spoken === word) return;
+      el.dataset.spoken = word;
+      window.speakWord(word);
+    }).observe(el, { childList: true, subtree: true });
+  };
+  watch("learnCard");
+
+  // 点击单词可再次播放
+  document.addEventListener("click", e => {
+    const w = e.target.closest(".study-word");
+    if (w) window.speakWord(w.textContent.trim());
+  });
+})();
